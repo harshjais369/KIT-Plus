@@ -194,7 +194,6 @@ public class AuthActivity extends AppCompatActivity {
                 }
             }
             editor.apply();
-            con.disconnect();
 
             StringBuffer response = new StringBuffer();
             int responseCode = con.getResponseCode();
@@ -205,6 +204,7 @@ public class AuthActivity extends AppCompatActivity {
                 in.close();
                 Log.println(Log.INFO, "response", response.toString());
             }
+            con.disconnect();
             return responseCode + ":::" + response;
         } catch (Exception e) {
             Log.e("AuthActivity", "Error in sendRequest", e);

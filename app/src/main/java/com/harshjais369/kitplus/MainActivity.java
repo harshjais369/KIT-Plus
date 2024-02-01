@@ -22,23 +22,18 @@ import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.harshjais369.kitplus.databinding.ActivityMainBinding;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Map;
-import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -58,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+                R.id.nav_dashboard, R.id.nav_mySubjects, R.id.nav_myClassmates)
                 .setOpenableLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -78,73 +73,6 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         setStudentPic(binding);
         setStudentInfoModel(true, binding);
-        setSubjectScheduleModel(binding, true);
-    }
-
-    private void setSubjectScheduleModel(@NonNull ActivityMainBinding binding, boolean isViewUpdate) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss", getResources().getConfiguration().locale);
-        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
-        String todayStr = sdf.format(new Date());
-        String url = getString(R.string.erp_domain) + "/json/TimeTableWS.asmx/StudentTimeTableWithAttendance";
-        String method = "POST";
-        String params = "{\"student\":\"" + 232650 + "\",\"attendanceDate\":\"" + todayStr + "\",\"withAttendanceStatus\":1}";
-        new Thread(() -> {
-            String res = sendRequest(url, method, params);
-            try {
-                if (res == null)
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Failed to fetch response from server",
-                            Toast.LENGTH_LONG).show());
-                String[] resArr = res.split(":::");
-                if (!resArr[0].equals("200")) {
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Error: Server returned code " + resArr[0],
-                            Toast.LENGTH_LONG).show());
-                } else {
-                    try {
-                        JSONObject resObj = new JSONObject(resArr[1]).getJSONObject("d");
-                        String timeTableHtmlStr = resObj.getString("timeTable_ViewString_P");
-                        Document doc = Jsoup.parse(timeTableHtmlStr);
-                        Element tbody = doc.select("tbody").get(0);
-                        Elements rows = tbody.select("tr");
-                        String[][] timeTable_arr = new String[rows.size()][];
-                        for (int i = 0; i < rows.size(); i++) {
-                            Element row = rows.get(i);
-                            Elements cols = row.select("td");
-                            if (i==0)
-                                cols = row.select("th");
-                            String[] cols_arr = new String[cols.size()];
-                            for (int j = 0; j < cols.size(); j++) {
-                                Element col = cols.get(j);
-                                cols_arr[j] = col.text();
-//                                TODO: get subject, faculty, roomNo and attendance
-                                Element attndce = col.select("span").get(0);
-                            }
-                            timeTable_arr[i] = cols_arr;
-                        }
-                        for (String[] arr : timeTable_arr) System.out.println("/> "+Arrays.toString(arr));
-//                        if (isViewUpdate) runOnUiThread(() -> setStudentDashboard_view(stuInfoModel, binding));
-                    } catch (Exception e) {
-                        if (e instanceof JSONException && e.getCause() instanceof IndexOutOfBoundsException) {
-//                        Session expired
-                            Log.e(TAG, "setUserTimeTable: Session expired!", e.getCause());
-                            runOnUiThread(() -> {
-                                Toast.makeText(getApplicationContext(), "Session expired! Please login again",
-                                        Toast.LENGTH_LONG).show();
-                                logout(MainActivity.this);
-                            });
-                        } else {
-                            Log.e(TAG, "setUserTimeTable: Error in parsing student time table", e);
-                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Invalid server response",
-                                    Toast.LENGTH_LONG).show());
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "setUserTimeTable: Error in fetching student time table", e);
-                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Failed to fetch student time table",
-                        Toast.LENGTH_LONG).show());
-            }
-        }).start();
-
     }
 
     private void setStudentDashboard_view(@NonNull StuInfoModel model, @NonNull ActivityMainBinding binding) {
@@ -156,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    void setStudentInfoModel(boolean isViewUpdate, ActivityMainBinding binding) {
+    private void setStudentInfoModel(boolean isViewUpdate, ActivityMainBinding binding) {
         String url = "https://erp.kit.ac.in/home.aspx/getStuDashboard_Details";
         String method = "POST";
         String params = "";
@@ -188,7 +116,10 @@ public class MainActivity extends AppCompatActivity {
                                 stuSemester
                         };
                         SharedPreferences.Editor editor = getSharedPreferences("com.harshjais369.kitplus.currUser", MODE_PRIVATE).edit();
-                        editor.putString("profilePicUrl", stuPhotoUrl).apply();
+                        editor.putString("profilePicUrl", stuPhotoUrl);
+                        editor.putString("stuAfnNo", stuAfnNo);
+                        editor.putStringSet("stuHiddenInfo_arr", new java.util.HashSet<>(Arrays.asList(stuHiddenInfo_arr)));
+                        editor.apply();
                         stuInfoModel = new StuInfoModel(stuName, stuCourse, stuBranch, stuSemester, stuSection,
                                 stuAfnNo, stuRollNo, stuPhotoUrl, stuHiddenInfo_arr);
                         if (isViewUpdate) runOnUiThread(() -> setStudentDashboard_view(stuInfoModel, binding));
@@ -216,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    void setStudentPic(@NonNull ActivityMainBinding binding) {
+    private void setStudentPic(@NonNull ActivityMainBinding binding) {
         // Fetch student image from link via HTTP request
         ImageView studentImage = binding.navView.getHeaderView(0).findViewById(R.id.nav_imgView_headerImage);
         new Thread(() -> {
@@ -232,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    void logout(@NonNull Activity contextActivity) {
+    public void logout(@NonNull Activity contextActivity) {
         SharedPreferences.Editor editor = getSharedPreferences("com.harshjais369.kitplus.cookies", MODE_PRIVATE).edit();
         editor.clear().apply();
         editor = getSharedPreferences("com.harshjais369.kitplus.currUser", MODE_PRIVATE).edit();

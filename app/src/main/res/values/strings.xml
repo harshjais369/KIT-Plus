@@ -2,8 +2,8 @@
     <string name="app_name">KIT Plus</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Loading…</string>
-    <string name="nav_header_subtitle">Loading…</string>
+    <string name="nav_header_title">@string/loading_str</string>
+    <string name="nav_header_subtitle">@string/loading_str</string>
     <string name="nav_header_desc">Student profile</string>
     <string name="action_settings">Settings</string>
 
@@ -11,5 +11,14 @@
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
 
+    <string name="loading_str">Loading…</string>
+    <string name="login_str">Login</string>
+    <string name="logout_str">Logout</string>
+
     <string name="erp_domain">https://erp.kit.ac.in/</string>
+    <string name="menu_dashboard">Dashboard</string>
+    <string name="my_subjects">My Subjects</string>
+    <string name="my_classmates">My Classmates</string>
+    <string name="my_profile">My Profile</string>
+    <string name="find_student_or_faculty">Find Student/Faculty</string>
 </resources>

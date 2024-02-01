@@ -18,7 +18,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material/icons/materialiconsround/keyboard_arrow_right/round_keyboard_arrow_right_24.xml" />
+                                      <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialicons/access_time/baseline_access_time_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -28,7 +28,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="round_keyboard_arrow_right_24" />
+                            <entry key="color" value="ffffff" />
+                            <entry key="outputName" value="baseline_access_time_24" />
                             <entry key="sourceFile" value="C:\Users\PRAJESH\AndroidStudioProjects\KITPlus" />
                           </map>
                         </option>
